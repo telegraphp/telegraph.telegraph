@@ -1,8 +1,9 @@
 {
     "name": "telegraph/telegraph",
     "type": "library",
-    "description": "A PSR-7 middleware dispatcher.",
+    "description": "A lambda-style PSR-7 middleware dispatcher.",
     "keywords": [
+        "lambda",
         "middleware",
         "psr-7"
     ],
