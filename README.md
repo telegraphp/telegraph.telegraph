@@ -11,3 +11,5 @@ This package requires PHP 5.5 or later; it has been tested on PHP 5.6, PHP 7, an
 To run the tests, issue `composer install` to install the test dependencies, then issue `phpunit`.
 
 For documentation, please see [here](./docs/index.md).
+
+For middleware, please see [here](https://github.com/telegraphp/telegraph.middleware).

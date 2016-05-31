@@ -96,13 +96,13 @@ $queue[] = function (RequestInterface $request, callable $next) {
     // optionally modify the incoming Request
     $request = $request->...;
 
-    // optionally dispatch the $next middleware and get back a Response
+    // dispatch the $next middleware and get back a Response
     $response = $next($request);
 
     // optionally modify the Response if desired
     $response = $response->...;
 
-    // NOT OPTIONAL: return the Response to the previous middleware
+    // return the Response to the previous middleware
     return $response;
 };
 ```
