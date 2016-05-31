@@ -196,8 +196,8 @@ $queue[] = 'FooMiddleware';
 $queue[] = 'BarMiddleware';
 $queue[] = 'BazMiddleware';
 
-$telegraphFactory = new TelegraphFactory($resolver);
-$telegraph = $telegraphFactory->newInstance($queue);
+$telegraphFactory = new TelegraphFactory();
+$telegraph = $telegraphFactory->newInstance($queue, $resolver);
 ```
 
 As long as the classes listed in the `$queue` implement
@@ -212,24 +212,14 @@ use an object to build the middleware queue instead.
 In these cases, you can use the _TelegraphFactory_ to create the _Telegraph_
 queue from any object that eimplements _Traversable_. The _TelegraphFactory_
 will then convert that queue object to an array using `iterator_to_array()`.
-
-For example, first instantiate a _TelegraphFactory_ with an optional
-`$resolver` ...
-
-```php
-use Telegraph\TelegraphFactory;
-
-$telegraphFactory = new TelegraphFactory($resolver);
-```
-
-... then instantiate a _Telegraph_ object where the `$queue` is a _Traversable_
-implementation:
+For example:
 
 ```php
 use Traversable;
 
 /**
- * var Traversable $queue
+ * var Traversable $queue Any object that implements Traversable, such as an
+ * ArrayObject or an Iterator.
  */
 $telegraph = $telegraphFactory->newInstance($queue);
 ```
