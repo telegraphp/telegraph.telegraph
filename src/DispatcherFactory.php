@@ -25,7 +25,7 @@ class DispatcherFactory
      *
      * The middleware queue.
      *
-     * @var (callable|MiddlewareInterface)[]
+     * @var (MiddlewareInterface)[]
      *
      */
     protected $queue = [];
@@ -46,8 +46,7 @@ class DispatcherFactory
      *
      * @param array|Traversable $queue The middleware queue.
      *
-     * @param callable|ResolverInterface $resolver Converts queue entries to
-     * callables or implementations of MiddlewareInterface.
+     * @param callable|ResolverInterface $resolver Converts queue entries to Middleware
      *
      */
     public function __construct($queue, $resolver = null)

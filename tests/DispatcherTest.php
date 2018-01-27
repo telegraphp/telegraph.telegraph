@@ -1,11 +1,29 @@
 <?php
 namespace Telegraph;
 
-use Zend\Diactoros\ServerRequestFactory;
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Zend\Diactoros\Response;
+use Zend\Diactoros\ServerRequestFactory;
 
-class DispatcherTest extends \PHPUnit_Framework_TestCase
+class DispatcherTest extends TestCase
 {
+
+    protected function responseFactory()
+    {
+        return new class implements MiddlewareInterface {
+            public function process(
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler
+            ) : ResponseInterface {
+                return new Response();
+            }
+        };
+    }
+
     public function testWithoutResolver()
     {
         FakeMiddleware::$count = 0;
@@ -14,13 +32,11 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
             new FakeMiddleware(),
             new FakeMiddleware(),
             new FakeMiddleware(),
-            function ($request, $next) {
-                return new Response();
-            },
+            $this->responseFactory()
         ];
 
         $dispatcher = new Dispatcher($queue);
-        $response = $dispatcher->dispatch(ServerRequestFactory::fromGlobals());
+        $response = $dispatcher->handle(ServerRequestFactory::fromGlobals());
 
         $actual = (string) $response->getBody();
         $this->assertSame('123', $actual);
@@ -34,15 +50,13 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
             new FakeMiddleware(),
             new FakeMiddleware(),
             new FakeMiddleware(),
-            function ($request, $next) {
-                return new Response();
-            },
+            $this->responseFactory()
         ];
 
         $resolver = new FakeResolver();
 
         $dispatcher = new Dispatcher($queue, $resolver);
-        $response = $dispatcher->dispatch(ServerRequestFactory::fromGlobals());
+        $response = $dispatcher->handle(ServerRequestFactory::fromGlobals());
 
         $actual = (string) $response->getBody();
         $this->assertSame('123', $actual);
@@ -53,26 +67,44 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
         $resolver = new FakeResolver();
         $queue = [];
         $dispatcher = new Dispatcher($queue, $resolver);
-        $this->setExpectedException(
+        $this->expectException(
             'Telegraph\Exception',
             'The middleware queue is empty.'
         );
-        $dispatcher->dispatch(ServerRequestFactory::fromGlobals());
+        $dispatcher->handle(ServerRequestFactory::fromGlobals());
+    }
+
+    public function testInvalidMiddleware()
+    {
+        $queue = [
+            new InvalidMiddleware(),
+            $this->responseFactory()
+        ];
+
+        $resolver = new FakeResolver();
+        $dispatcher = new Dispatcher($queue, $resolver);
+        $this->expectException(
+            'Telegraph\Exception',
+            'Middleware must implement Psr\Http\Server\MiddlewareInterface'
+        );
+        $dispatcher->handle(ServerRequestFactory::fromGlobals());
     }
 
     public function testNonResponse()
     {
         $queue = [
-            function ($request, $next) {
-                return 'not a response object';
-            },
+            new class implements MiddlewareInterface {
+                public function process(
+                    ServerRequestInterface $request,
+                    RequestHandlerInterface $handler
+                ) : ResponseInterface {
+                    return 'not a response object';
+                }
+            }
         ];
 
         $dispatcher = new Dispatcher($queue);
-        $this->setExpectedException(
-            'Telegraph\Exception',
-            'Middleware must return a response.'
-        );
-        $dispatcher->dispatch(ServerRequestFactory::fromGlobals());
+        $this->expectException('TypeError');
+        $dispatcher->handle(ServerRequestFactory::fromGlobals());
     }
 }

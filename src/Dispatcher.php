@@ -10,8 +10,10 @@
  */
 namespace Telegraph;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  *
@@ -20,13 +22,13 @@ use Psr\Http\Message\ResponseInterface;
  * @package telegraph/telegraph
  *
  */
-class Dispatcher implements DispatcherInterface
+class Dispatcher implements RequestHandlerInterface
 {
     /**
      *
      * The middleware queue.
      *
-     * @var (callable|MiddlewareInterface)[]
+     * @var (MiddlewareInterface)[]
      *
      */
     protected $queue = [];
@@ -44,7 +46,7 @@ class Dispatcher implements DispatcherInterface
      *
      * Constructor.
      *
-     * @param (callable|MiddlewareInterface)[] $queue The middleware queue.
+     * @param (MiddlewareInterface)[] $queue The middleware queue.
      *
      * @param callable|ResolverInterface $resolver Converts queue entries to
      * callables.
@@ -60,34 +62,21 @@ class Dispatcher implements DispatcherInterface
      *
      * Runs the next entry in the queue.
      *
-     * @param RequestInterface $request The request.
+     * @param ServerRequestInterface $request The request.
      *
      * @return ResponseInterface
      *
      */
-    public function __invoke(RequestInterface $request)
+    public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         $entry = array_shift($this->queue);
         $middleware = $this->resolve($entry);
-        $response = $middleware($request, $this);
-        if (! $response instanceof ResponseInterface) {
-            throw Exception::nonResponse();
-        }
-        return $response;
-    }
 
-    /**
-     *
-     * Calls the next entry in the queue; essentially an alias to `__invoke()`.
-     *
-     * @param RequestInterface $request The request.
-     *
-     * @return ResponseInterface
-     *
-     */
-    public function dispatch(RequestInterface $request)
-    {
-        return $this($request);
+        if (! $middleware instanceof MiddlewareInterface) {
+            throw Exception::invalidMiddleware();
+        }
+
+        return $middleware->process($request, $this);
     }
 
     /**
@@ -96,7 +85,7 @@ class Dispatcher implements DispatcherInterface
      *
      * @param mixed $entry The queue entry.
      *
-     * @return callable|MiddlewareInterface
+     * @return MiddlewareInterface
      *
      * @throws RuntimeException when the queue is empty.
      *
