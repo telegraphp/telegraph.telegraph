@@ -2,9 +2,8 @@
 namespace Telegraph;
 
 use Traversable;
-use PHPUnit\Framework\TestCase;
 
-class TelegraphFactoryTest extends TestCase
+class TelegraphFactoryTest extends \PHPUnit_Framework_TestCase
 {
     protected $telegraphFactory;
 
@@ -22,7 +21,7 @@ class TelegraphFactoryTest extends TestCase
 
     public function testTraversable()
     {
-        $queue = $this->createMock(Traversable::class);
+        $queue = $this->getMock(Traversable::class);
 
         $telegraph = $this->telegraphFactory->newInstance($queue);
         $this->assertInstanceOf('Telegraph\Telegraph', $telegraph);
@@ -30,7 +29,7 @@ class TelegraphFactoryTest extends TestCase
 
     public function testInvalidQueue()
     {
-        $this->expectException(
+        $this->setExpectedException(
             'Telegraph\Exception',
             'The middleware queue must be an array or a Traversable.'
         );
