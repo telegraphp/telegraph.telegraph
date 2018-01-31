@@ -10,7 +10,7 @@
  */
 namespace Telegraph;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -53,9 +53,9 @@ class Telegraph
      * @return ResponseInterface
      *
      */
-    public function handle(ServerRequestInterface $request)
+    public function dispatch(RequestInterface $request)
     {
         $dispatcher = $this->dispatcherFactory->newInstance();
-        return $dispatcher->handle($request);
+        return $dispatcher->dispatch($request);
     }
 }
