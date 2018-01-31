@@ -35,6 +35,20 @@ class Exception extends \Exception
 
     /**
      *
+     * The middleware is invalid.
+     *
+     * @return Exception
+     *
+     */
+    static public function invalidMiddleware()
+    {
+        return new Exception(
+            'Middleware must implement Psr\Http\Server\MiddlewareInterface'
+        );
+    }
+
+    /**
+     *
      * The middleware queue is empty.
      *
      * @return Exception
@@ -45,15 +59,4 @@ class Exception extends \Exception
         return new Exception('The middleware queue is empty.');
     }
 
-    /**
-     *
-     * Middleware returned something other than a response.
-     *
-     * @return Exception
-     *
-     */
-    static public function nonResponse()
-    {
-        return new Exception('Middleware must return a response.');
-    }
 }
